@@ -1,0 +1,199 @@
+"""
+Here's a simple Python program that will remind you to go outside for at least six hours a day. 
+The program will run continuously and provide reminders every hour until the total of six hours has passes.
+You can customize the message or interval as needed:
+"""
+
+```python
+import time
+from datetime import datetime, timedelta
+
+def remind_to_go_outside():
+	total_hours = 0
+	target_hours = 6
+	last_reminder_time = datetime.now()
+	
+	print("Reminder system initialized. Don't forget to go outside for at least 6 hours a day!")
+	
+	while total_hours < target_hours:
+		current_time = datetime.now()
+
+		# Check if an hour has passed since the last reminder
+		if current_time - last_reminder_time >= timedelta(hours=1):
+			total_hours += 1
+			last_reminder_time = current_time
+			print(f"Reminder #{total_hours}: Time to go outside! Total time outside: {total_hours} hour(s)")
+			
+		# Wait for a minute before checking again
+		time.sleep(60)
+		
+	print(f"Congrats! You've been outside for {target_hours} hours today. Well done!")
+
+if __name__ = "__main__":
+	remind_to_go_outside()
+```
+
+### How it works:
+- The program tracks the total hours spent outside.
+- It sends a reminder every hour, reminding you to go outside.
+- Once you have spent six hours outside, it stops and congratulates you.
+
+###	Notes:
+1. Run the program as a backgroud task or a console application.
+2. You can modify the `target_hours` variable to adjust how many hours you want the program to track.
+3. Ensure that the program is allowed to run continuously, and you might want to adjust the reminder frequency (e.g. every 30 minutes instead of every hour).
+
+
+"""
+Here's the step-by-step guide to create an Androud app that reminds users to go outside for at least six hours a day.
+The app will use **Kotlin** as the programming language and **Android Studio** for development.
+---
+### **App Features:**
+1. Track the total time spent outside.
+2. Sends hourly reminders as notifications.
+3. Displays progress (time spent outside) in the app.
+
+---
+### **1. Create a New Android Project**
+1. Open Android Studio.
+2. Select "Create New Project" and choose an "Empty Activity."
+3. Name the project (e.g., `GoOutsideReminder`) and choose Kotlin as the language.
+
+---
+### **2. Design the User Interface (UI)**
+1. Open `activity_main.xml` and design a simple layout:
+```xml
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:gravity="center">
+	
+	<TextView
+		android:id="@+id/progressText"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="Time spent outside: 0 hours"
+		android:textSize="18sp"
+		android:layout_marginBottom="20dp"/>
+		
+	<Button
+		android:id="@+id/startTrackingButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="Start Tracking" />
+</LinearLayout>
+```
+
+---
+#### **3. Implement Reminder Logic in `MainActivity.kt`**
+1. Open `MainActivity.kt` and set up the logic:
+```kotlin
+package com.example.gooutsidereminder
+
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import android.os.Bundle
+
+class MainActivity : AppCompatActivity() {
+
+	private var totalHours = 0
+	private val targetHours = 6
+	private val handler = Handler(Looper.getMainLooper())
+	private lateinit var progressText: TextView
+	
+	overrride fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		setContentView(R.layout.activity_main)
+		
+		progressText = findViewById(R.id.progressText)
+		val startTrackingButton: Button = findViewById(R.id.startTrackingButton)
+		
+		createNotificationChannel()
+		
+		startTrackingButton.setOnClickListner {
+			startTracking()
+		}
+	}
+	
+	private fun startTracking() {
+		handler.postDelayed(object : Runnable {
+			override fun run() {
+				if (totalHours < targetHours) {
+					totalHours++
+					sendNotification("Go Outside Reminder", "Time to go outside! Total: $totalHours hours(s)")
+					progressText.text = "Time spent outside: $totalHours hours"
+					handler.postDelayed(this, 3600000) // 1 hour in milliseconds
+					} else {
+						sendNotification("Congrats!", "You've spent 6 hours outside today!")
+					}
+				}
+			}
+		}, 0)
+	}
+	
+	private fun sendNotification(title: String, message: String) {
+		val intent = Intent(this, MainActivity::class.java)
+		val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+		
+		val notification = NotificationCompat.Builder(this, "GO_OUTSIDE_CHANNEL")
+			.setContentTitle(title)
+			.setContentText(message)
+			.setSmallIcon(R.drawable.ic_launcher_foreground)
+			.setContentIntent(pendingIntent)
+			.setAutoCancel(true)
+			.build()
+			
+		val notificationManager = getSystemService = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+		notificationManager.notify(totalHours, notification)
+		
+	}
+	
+	private fun createNotificationChannel() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			val channel = NotificationChannel(
+				"GO_OUTSIDE_CHANNEL",
+				"Go Outside Reminders",
+				NotificationManager.IMPORTANCE_DEFaULT
+			)
+			val manager = getSystemService(NotificationManager::class.java)
+			manager.createNotificationChannel(channel)
+		}
+	}
+}
+```
+
+---
+#### **4. Add Pernussions**
+1. Open `AndroidManifest.xml` and ensure the app has the necessary permissions:
+```xml
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+```
+
+---
+#### **5. Test the App**
+1. Connect your Android device or use an emulator
+2. Build and run the app.
+3. Click the "start tracking" button to begin reminders.
+4. You'll receive a notification every hour until the total reaches six hours.
+
+---
+### **How it works:**
+1. The `Handler` schedules tasks at hourly interval (3600000 ms)
+2. Notifications are sent using `NotificationCompat`
+3. The app updates the displayed progress in the UI.
+
+---
+				
+		
