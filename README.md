@@ -1,1 +1,1 @@
-# Competitions
+# Coding Practice
